@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AKC CH Points Calculator — Labrador Retrievers 2026</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#fdf8f0;color:#2c2c2a;padding:20px;min-height:100vh;}
+.wrap{max-width:700px;margin:0 auto;}
+
+.header{text-align:center;margin-bottom:26px;}
+.header h1{font-size:22px;font-weight:700;color:#412402;letter-spacing:-0.3px;}
+.header .sub{font-size:13px;color:#854f0b;margin-top:5px;}
+.header .badge{display:inline-block;background:#eaf3de;border:0.5px solid #c0dd97;border-radius:6px;padding:3px 10px;font-size:11px;font-weight:700;color:#27500a;margin-top:8px;text-transform:uppercase;letter-spacing:0.5px;}
+
+.card{background:#fff;border:0.5px solid #d3d1c7;border-radius:12px;padding:18px 20px;margin-bottom:14px;}
+.step-label{font-size:11px;font-weight:700;color:#888780;text-transform:uppercase;letter-spacing:0.7px;margin-bottom:12px;}
+
+.fl{font-size:11px;font-weight:700;color:#5f5e5a;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;}
+.fh{font-size:11px;color:#888780;margin-bottom:6px;line-height:1.5;}
+
+select,input[type="number"]{
+  width:100%;padding:9px 12px;border:0.5px solid #b4b2a9;
+  border-radius:8px;font-size:14px;color:#2c2c2a;background:#fff;
+}
+select{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:32px;cursor:pointer;}
+select:focus,input:focus{outline:2px solid #ba7517;outline-offset:1px;border-color:#ba7517;}
+input[type="number"]{-moz-appearance:textfield;}
+input[type="number"]::-webkit-outer-spin-button,input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;}
+
+.div-badge{background:#faeeda;border:0.5px solid #fac775;border-radius:8px;padding:9px 13px;margin-top:10px;font-size:13px;color:#633806;display:none;}
+.div-badge strong{color:#412402;font-weight:700;}
+.div-sched{margin-top:8px;display:grid;grid-template-columns:1fr 1fr;gap:4px;}
+.div-sched-row{font-size:11px;color:#854f0b;}
+
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:480px){.g2{grid-template-columns:1fr;}}
+
+.btn-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+@media(max-width:480px){.btn-grid{grid-template-columns:1fr;}}
+
+.tog{padding:11px 13px;border:1.5px solid #d3d1c7;border-radius:10px;background:#fff;cursor:pointer;text-align:left;font-size:13px;font-weight:500;color:#5f5e5a;transition:all 0.15s;line-height:1.3;}
+.tog .code{font-family:monospace;font-size:12px;font-weight:700;color:#ba7517;display:block;margin-bottom:2px;}
+.tog.active{border-color:#ba7517;background:#faeeda;color:#412402;}
+.tog:hover{border-color:#ba7517;}
+
+.hint-box{background:#f7f5f0;border-radius:8px;padding:11px 13px;font-size:12px;color:#5f5e5a;line-height:1.6;margin-bottom:12px;}
+.hint-box strong{color:#412402;}
+
+.champ-block{border-top:0.5px solid #f1efe8;padding-top:14px;margin-top:4px;}
+
+.calc-btn{width:100%;padding:15px;background:#ba7517;color:#fff;border:none;border-radius:10px;font-size:16px;font-weight:700;cursor:pointer;letter-spacing:0.3px;transition:background 0.15s;}
+.calc-btn:hover{background:#854f0b;}
+.calc-btn:active{background:#633806;transform:scale(0.99);}
+
+/* Results */
+.result-card{background:#fff;border:2px solid #ba7517;border-radius:12px;padding:22px;margin-top:14px;display:none;}
+.result-top{display:flex;align-items:flex-end;gap:14px;margin-bottom:4px;}
+.result-pts{font-size:56px;font-weight:800;color:#412402;line-height:1;}
+.result-meta{padding-bottom:8px;}
+.result-pts-label{font-size:15px;color:#854f0b;font-weight:500;}
+.result-sublabel{font-size:12px;color:#888780;margin-top:2px;}
+.major-badge{display:inline-block;background:#eaf3de;border:0.5px solid #c0dd97;border-radius:6px;padding:5px 12px;font-size:12px;font-weight:700;color:#27500a;margin:10px 0 14px;text-transform:uppercase;letter-spacing:0.5px;}
+.no-pts-msg{background:#fcebeb;border:0.5px solid #f09595;border-radius:8px;padding:10px 13px;font-size:13px;color:#501313;margin:10px 0 14px;}
+
+.bar-track{background:#f1efe8;border-radius:6px;height:10px;overflow:hidden;margin-bottom:18px;}
+.bar-fill{height:100%;border-radius:6px;background:#ba7517;transition:width 0.5s ease;}
+
+.breakdown-title{font-size:12px;font-weight:700;color:#5f5e5a;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;}
+table.bt{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px;}
+table.bt td{padding:7px 0;border-bottom:0.5px solid #f1efe8;color:#5f5e5a;}
+table.bt td:last-child{text-align:right;font-weight:700;color:#2c2c2a;}
+table.bt tr:last-child td{border-bottom:none;}
+table.bt .total-row td{color:#412402;font-weight:700;border-top:1px solid #d3d1c7;border-bottom:none;padding-top:9px;}
+
+.explain{background:#faeeda;border-radius:8px;padding:12px 14px;font-size:12px;color:#633806;line-height:1.7;}
+.explain strong{color:#412402;}
+
+.disclaimer{background:#fcebeb;border:0.5px solid #f7c1c1;border-radius:10px;padding:15px;font-size:12px;color:#501313;line-height:1.7;margin-top:14px;}
+.disclaimer strong{color:#a32d2d;}
+.disclaimer a{color:#a32d2d;}
+
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="header">
+  <h1>AKC Championship Points Calculator</h1>
+  <div class="sub">Labrador Retrievers Only &mdash; 2026 Point Schedule</div>
+  <div class="badge">Effective May 12, 2026</div>
+</div>
+
+<!-- STEP 1 -->
+<div class="card">
+  <div class="step-label">Step 1 &mdash; Show Location</div>
+  <div class="fl">State or Territory</div>
+  <select id="state-sel" onchange="onState()">
+    <option value="">— Select state or territory —</option>
+    <optgroup label="Division 1 — CT, ME, MA, NH, RI, VT">
+      <option value="CT">Connecticut (CT)</option><option value="ME">Maine (ME)</option>
+      <option value="MA">Massachusetts (MA)</option><option value="NH">New Hampshire (NH)</option>
+      <option value="RI">Rhode Island (RI)</option><option value="VT">Vermont (VT)</option>
+    </optgroup>
+    <optgroup label="Division 2 — DE, NJ, NY, PA">
+      <option value="DE">Delaware (DE)</option><option value="NJ">New Jersey (NJ)</option>
+      <option value="NY">New York (NY)</option><option value="PA">Pennsylvania (PA)</option>
+    </optgroup>
+    <optgroup label="Division 3 — DC, MD, NC, VA, WV">
+      <option value="DC">Washington D.C. (DC)</option><option value="MD">Maryland (MD)</option>
+      <option value="NC">North Carolina (NC)</option><option value="VA">Virginia (VA)</option>
+      <option value="WV">West Virginia (WV)</option>
+    </optgroup>
+    <optgroup label="Division 4 — FL, GA, SC">
+      <option value="FL">Florida (FL)</option><option value="GA">Georgia (GA)</option>
+      <option value="SC">South Carolina (SC)</option>
+    </optgroup>
+    <optgroup label="Division 5 — IN, KY, MI, OH">
+      <option value="IN">Indiana (IN)</option><option value="KY">Kentucky (KY)</option>
+      <option value="MI">Michigan (MI)</option><option value="OH">Ohio (OH)</option>
+    </optgroup>
+    <optgroup label="Division 6 — CO, NV, UT">
+      <option value="CO">Colorado (CO)</option><option value="NV">Nevada (NV)</option>
+      <option value="UT">Utah (UT)</option>
+    </optgroup>
+    <optgroup label="Division 7 — KS, OK, TX">
+      <option value="KS">Kansas (KS)</option><option value="OK">Oklahoma (OK)</option>
+      <option value="TX">Texas (TX)</option>
+    </optgroup>
+    <optgroup label="Division 8 — OR, WA">
+      <option value="OR">Oregon (OR)</option><option value="WA">Washington (WA)</option>
+    </optgroup>
+    <optgroup label="Division 9 — AZ, CA">
+      <option value="AZ">Arizona (AZ)</option><option value="CA">California (CA)</option>
+    </optgroup>
+    <optgroup label="Division 10 — AK">
+      <option value="AK">Alaska (AK)</option>
+    </optgroup>
+    <optgroup label="Division 11 — HI">
+      <option value="HI">Hawaii (HI)</option>
+    </optgroup>
+    <optgroup label="Division 12 — Mexico, Puerto Rico">
+      <option value="MX">Mexico</option><option value="PR">Puerto Rico</option>
+    </optgroup>
+    <optgroup label="Division 13 — MT, NE, NM, ND, SD, WY">
+      <option value="MT">Montana (MT)</option><option value="NE">Nebraska (NE)</option>
+      <option value="NM">New Mexico (NM)</option><option value="ND">North Dakota (ND)</option>
+      <option value="SD">South Dakota (SD)</option><option value="WY">Wyoming (WY)</option>
+    </optgroup>
+    <optgroup label="Division 14 — AL, AR, LA, MS, TN">
+      <option value="AL">Alabama (AL)</option><option value="AR">Arkansas (AR)</option>
+      <option value="LA">Louisiana (LA)</option><option value="MS">Mississippi (MS)</option>
+      <option value="TN">Tennessee (TN)</option>
+    </optgroup>
+    <optgroup label="Division 15 — IL, IA, MN, MO, WI">
+      <option value="IL">Illinois (IL)</option><option value="IA">Iowa (IA)</option>
+      <option value="MN">Minnesota (MN)</option><option value="MO">Missouri (MO)</option>
+      <option value="WI">Wisconsin (WI)</option>
+    </optgroup>
+  </select>
+  <div class="div-badge" id="div-badge">
+    <strong id="div-name"></strong> &mdash; <span id="div-states"></span>
+    <div class="div-sched" id="div-sched"></div>
+  </div>
+</div>
+
+<!-- STEP 2 -->
+<div class="card">
+  <div class="step-label">Step 2 &mdash; Your Dog's Sex</div>
+  <div class="btn-grid">
+    <button class="tog" id="sex-dog" onclick="setSex('dog')"><span class="code">Dogs</span>Male</button>
+    <button class="tog" id="sex-bitch" onclick="setSex('bitch')"><span class="code">Bitches</span>Female</button>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div class="card">
+  <div class="step-label">Step 3 &mdash; Highest Award Won</div>
+  <div class="btn-grid">
+    <button class="tog" id="award-winners" onclick="setAward('winners')"><span class="code" id="aw-code">WD / WB</span>Winners only</button>
+    <button class="tog" id="award-bow" onclick="setAward('bow')"><span class="code">BOW</span>Best of Winners</button>
+    <button class="tog" id="award-bob" onclick="setAward('bob')"><span class="code">BOB</span>Best of Breed</button>
+    <button class="tog" id="award-bos" onclick="setAward('bos')"><span class="code">BOS</span>Best of Opposite Sex</button>
+  </div>
+</div>
+
+<!-- STEP 4 -->
+<div class="card">
+  <div class="step-label">Step 4 &mdash; Dogs Competing</div>
+  <div class="hint-box">Count only dogs <strong>present &amp; competing</strong> in regular classes. <strong>Do not count</strong> absentees, disqualified, dismissed, or excused dogs. Dogs moved up to BOB count as Champions, not class dogs.</div>
+  <div class="g2">
+    <div>
+      <div class="fl">Class Dogs (males)</div>
+      <div class="fh">Males in regular classes</div>
+      <input type="number" id="cls-dogs" min="0" value="0">
+    </div>
+    <div>
+      <div class="fl">Class Bitches (females)</div>
+      <div class="fh">Females in regular classes</div>
+      <input type="number" id="cls-bitches" min="0" value="0">
+    </div>
+  </div>
+  <div class="champ-block hidden" id="champ-block">
+    <div class="hint-box" style="margin-bottom:12px;">For BOB &amp; BOS: also enter <strong>Specials (Champions)</strong> present and competing in Best of Breed. Do not count absentees.</div>
+    <div class="g2">
+      <div>
+        <div class="fl">Champion Dogs</div>
+        <div class="fh">Male Specials at BOB</div>
+        <input type="number" id="chp-dogs" min="0" value="0">
+      </div>
+      <div>
+        <div class="fl">Champion Bitches</div>
+        <div class="fh">Female Specials at BOB</div>
+        <input type="number" id="chp-bitches" min="0" value="0">
+      </div>
+    </div>
+  </div>
+</div>
+
+<button class="calc-btn" onclick="calculate()">Calculate Points</button>
+
+<!-- RESULTS -->
+<div class="result-card" id="result-card">
+  <div class="result-top">
+    <div class="result-pts" id="r-pts">0</div>
+    <div class="result-meta">
+      <div class="result-pts-label">Championship Point<span id="r-pts-s">s</span></div>
+      <div class="result-sublabel" id="r-sublabel"></div>
+    </div>
+  </div>
+  <div id="r-major" class="major-badge hidden">MAJOR WIN (3+ pts)</div>
+  <div id="r-nopt" class="no-pts-msg hidden">No points awarded — insufficient dogs competing.</div>
+  <div class="bar-track"><div class="bar-fill" id="r-bar" style="width:0%"></div></div>
+  <div class="breakdown-title">Calculation Breakdown</div>
+  <table class="bt" id="r-table"></table>
+  <div class="explain" id="r-explain"></div>
+</div>
+
+<div class="disclaimer">
+  <strong>Important Disclaimer:</strong> This calculator is provided as a quick-reference convenience tool for Labrador Retriever exhibitors. Always verify your championship points directly with the <strong>American Kennel Club (AKC)</strong> — point schedules vary by region and are subject to change. This tool reflects the Labrador Retriever schedule effective <strong>May 12, 2026</strong> and applies to <strong>Labrador Retrievers only</strong>. We are still validating this tool. If you find any discrepancy, please contact <a href="mailto:cedarkeylabradors@gmail.com">cedarkeylabradors@gmail.com</a>.
+</div>
+
+</div><!-- .wrap -->
+<script>
+const DIV = {
+  1:{name:'Division 1',states:'CT, ME, MA, NH, RI, VT',dogs:[2,9,15,21,31],bitches:[3,14,24,40,71]},
+  2:{name:'Division 2',states:'DE, NJ, NY, PA',dogs:[2,7,11,16,25],bitches:[2,9,15,21,32]},
+  3:{name:'Division 3',states:'DC, MD, NC, VA, WV',dogs:[2,7,11,14,20],bitches:[2,9,15,24,40]},
+  4:{name:'Division 4',states:'FL, GA, SC',dogs:[2,9,16,18,23],bitches:[2,10,17,24,37]},
+  5:{name:'Division 5',states:'IN, KY, MI, OH',dogs:[2,6,9,15,27],bitches:[2,9,15,27,48]},
+  6:{name:'Division 6',states:'CO, NV, UT',dogs:[2,7,12,17,26],bitches:[2,9,16,22,34]},
+  7:{name:'Division 7',states:'KS, OK, TX',dogs:[2,6,9,13,20],bitches:[2,9,15,20,30]},
+  8:{name:'Division 8',states:'OR, WA',dogs:[2,9,15,18,24],bitches:[2,12,21,30,48]},
+  9:{name:'Division 9',states:'AZ, CA',dogs:[2,9,16,20,26],bitches:[2,10,18,25,39]},
+  10:{name:'Division 10',states:'AK',dogs:[2,3,4,5,6],bitches:[2,3,4,5,6]},
+  11:{name:'Division 11',states:'HI',dogs:[2,3,4,5,6],bitches:[2,3,4,5,6]},
+  12:{name:'Division 12',states:'Mexico, Puerto Rico',dogs:[2,3,4,5,6],bitches:[2,3,4,5,6]},
+  13:{name:'Division 13',states:'MT, NE, NM, ND, SD, WY',dogs:[2,6,9,10,12],bitches:[2,7,11,13,17]},
+  14:{name:'Division 14',states:'AL, AR, LA, MS, TN',dogs:[2,6,9,11,16],bitches:[2,8,13,16,21]},
+  15:{name:'Division 15',states:'IL, IA, MN, MO, WI',dogs:[2,5,7,11,17],bitches:[2,7,11,18,31]},
+};
+const S2D={CT:1,ME:1,MA:1,NH:1,RI:1,VT:1,DE:2,NJ:2,NY:2,PA:2,DC:3,MD:3,NC:3,VA:3,WV:3,FL:4,GA:4,SC:4,IN:5,KY:5,MI:5,OH:5,CO:6,NV:6,UT:6,KS:7,OK:7,TX:7,OR:8,WA:8,AZ:9,CA:9,AK:10,HI:11,MX:12,PR:12,MT:13,NE:13,NM:13,ND:13,SD:13,WY:13,AL:14,AR:14,LA:14,MS:14,TN:14,IL:15,IA:15,MN:15,MO:15,WI:15};
+
+let sex=null, award=null;
+
+function pts(n,sched){let p=0;for(let i=0;i<5;i++){if(n>=sched[i])p=i+1;}return p;}
+
+function onState(){
+  const st=document.getElementById('state-sel').value;
+  const badge=document.getElementById('div-badge');
+  if(!st){badge.style.display='none';return;}
+  const d=DIV[S2D[st]];
+  document.getElementById('div-name').textContent=d.name;
+  document.getElementById('div-states').textContent=d.states;
+  const sched=document.getElementById('div-sched');
+  const pts_labels=['1 pt','2 pts','3 pts','4 pts','5 pts'];
+  sched.innerHTML=pts_labels.map((l,i)=>`<span class="div-sched-row">${d.dogs[i]}D / ${d.bitches[i]}B = ${l}</span>`).join('');
+  badge.style.display='block';
+}
+
+function setSex(s){
+  sex=s;
+  document.getElementById('sex-dog').classList.toggle('active',s==='dog');
+  document.getElementById('sex-bitch').classList.toggle('active',s==='bitch');
+  document.getElementById('aw-code').textContent=s==='dog'?'WD':'WB';
+}
+
+function setAward(a){
+  award=a;
+  ['winners','bow','bob','bos'].forEach(x=>document.getElementById('award-'+x).classList.toggle('active',x===a));
+  document.getElementById('champ-block').classList.toggle('hidden',a!=='bob'&&a!=='bos');
+}
+
+function n(id){return Math.max(0,parseInt(document.getElementById(id).value)||0);}
+
+function calculate(){
+  if(!document.getElementById('state-sel').value){alert('Please select a state or territory.');return;}
+  if(!sex){alert('Please select your dog\'s sex.');return;}
+  if(!award){alert('Please select the award won.');return;}
+  const divNum=S2D[document.getElementById('state-sel').value];
+  const d=DIV[divNum];
+  const clsDogs=n('cls-dogs'),clsBitches=n('cls-bitches'),chpDogs=n('chp-dogs'),chpBitches=n('chp-bitches');
+  const isBitch=sex==='bitch';
+  const mySched=isBitch?d.bitches:d.dogs;
+  const myCls=isBitch?clsBitches:clsDogs;
+  const myChp=isBitch?chpBitches:chpDogs;
+  const sexL=isBitch?'bitch':'dog';
+  const sexP=isBitch?'bitches':'dogs';
+  const wdPts=pts(clsDogs,d.dogs);
+  const wbPts=pts(clsBitches,d.bitches);
+  const myBase=isBitch?wbPts:wdPts;
+  let result=0,rows=[],explain='';
+
+  if(award==='winners'){
+    result=myBase;
+    rows=[['Class '+sexP+' competing',myCls],['Points per '+d.name+' schedule',result]];
+    explain=`<strong>Winners ${isBitch?'Bitch':'Dog'}:</strong> ${myCls} class ${sexP} present and competing = <strong>${result} point${result!==1?'s':''}</strong> per the ${d.name} point schedule.`;
+  } else if(award==='bow'){
+    result=Math.max(wdPts,wbPts);
+    let specialNote='';
+    if(result===0){
+      const combined=clsDogs+clsBitches;
+      if(combined>=mySched[0]){result=1;specialNote='<br>1-point BOW special rule applied: neither sex individually qualified, but combined total ('+combined+') meets the '+mySched[0]+'-'+sexP+' threshold.';}
+    }
+    rows=[['Class dogs competing',clsDogs],['WD points',wdPts],['Class bitches competing',clsBitches],['WB points',wbPts],['BOW — higher of WD/WB',result]];
+    explain=`<strong>Best of Winners:</strong> WD = ${wdPts} pt${wdPts!==1?'s':''}, WB = ${wbPts} pt${wbPts!==1?'s':''}. BOW receives the <strong>highest</strong> of the two = <strong>${result} point${result!==1?'s':''}</strong>. You cannot combine both sexes.${specialNote}`;
+  } else if(award==='bob'){
+    const total=myCls+chpDogs+chpBitches;
+    result=pts(total,mySched);
+    rows=[['Class '+sexP,myCls],['Champion dogs (Specials)',chpDogs],['Champion bitches (Specials)',chpBitches],['Total competing',total],['Points per '+d.name+' schedule',result]];
+    rows[rows.length-2].isTotal=true;
+    explain=`<strong>Best of Breed:</strong> When a class ${sexL} goes BOB, count class ${sexP} + <strong>all Champions of both sexes</strong> competing for BOB. ${myCls} + ${chpDogs} + ${chpBitches} = <strong>${total} total</strong> → <strong>${result} point${result!==1?'s':''}</strong>.`;
+  } else if(award==='bos'){
+    const total=myCls+myChp;
+    result=pts(total,mySched);
+    rows=[['Class '+sexP,myCls],['Champion '+sexP+' (same sex only)',myChp],['Total competing',total],['Points per '+d.name+' schedule',result]];
+    explain=`<strong>Best of Opposite Sex:</strong> Count class ${sexP} + Champions of the <strong>same sex only</strong> that competed for BOB. ${myCls} + ${myChp} = <strong>${total} total</strong> → <strong>${result} point${result!==1?'s':''}</strong>.`;
+  }
+
+  const rc=document.getElementById('result-card');
+  rc.style.display='block';
+  document.getElementById('r-pts').textContent=result;
+  document.getElementById('r-pts-s').textContent=result===1?'':'s';
+  document.getElementById('r-sublabel').textContent=d.name+' · '+d.states;
+  document.getElementById('r-major').classList.toggle('hidden',result<3);
+  document.getElementById('r-nopt').classList.toggle('hidden',result>0);
+  document.getElementById('r-bar').style.width=(result*20)+'%';
+
+  const awardNames={winners:isBitch?'Winners Bitch (WB)':'Winners Dog (WD)',bow:'Best of Winners (BOW)',bob:'Best of Breed (BOB)',bos:'Best of Opposite Sex (BOS)'};
+  let t=`<tr><td>Award</td><td>${awardNames[award]}</td></tr>`;
+  for(const row of rows){
+    const isTot=row[0]==='Total competing';
+    t+=`<tr${isTot?' class="total-row"':''}><td>${row[0]}</td><td>${row[1]}</td></tr>`;
+  }
+  document.getElementById('r-table').innerHTML=t;
+  document.getElementById('r-explain').innerHTML=explain;
+  rc.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+</script>
+</body>
+</html>
