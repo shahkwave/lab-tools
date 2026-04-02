@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Labrador Color Gene Predictor</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #fdf8f0; color: #2c2c2a; min-height: 100vh; padding: 20px; }
+  .wrap { max-width: 680px; margin: 0 auto; }
+
+  .header { text-align: center; margin-bottom: 28px; }
+  .header h1 { font-size: 22px; font-weight: 600; color: #412402; letter-spacing: -0.3px; }
+  .header p { font-size: 14px; color: #854f0b; margin-top: 4px; }
+
+  .parents { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+  @media (max-width: 480px) { .parents { grid-template-columns: 1fr; } }
+
+  .parent-card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 12px; padding: 16px; }
+  .parent-title { font-size: 12px; font-weight: 600; color: #5f5e5a; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 12px; }
+
+  .color-badge {
+    border-radius: 8px; padding: 10px 12px; margin-bottom: 14px;
+    display: flex; align-items: center; gap: 10px;
+    border: 0.5px solid rgba(0,0,0,0.1);
+  }
+  .color-swatch { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid rgba(0,0,0,0.15); flex-shrink: 0; }
+  .color-name { font-size: 14px; font-weight: 600; }
+  .color-geno { font-size: 12px; font-family: monospace; opacity: 0.75; }
+
+  .field-label { font-size: 11px; font-weight: 600; color: #888780; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+  select {
+    width: 100%; padding: 8px 10px; border: 0.5px solid #b4b2a9; border-radius: 8px;
+    font-size: 13px; color: #2c2c2a; background: #fff; cursor: pointer;
+    appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px;
+    margin-bottom: 10px;
+  }
+  select:focus { outline: 2px solid #ba7517; outline-offset: 1px; border-color: #ba7517; }
+
+  .results-card { background: #fff; border: 0.5px solid #d3d1c7; border-radius: 12px; padding: 20px; margin-bottom: 14px; }
+  .results-title { font-size: 15px; font-weight: 600; color: #412402; margin-bottom: 18px; }
+
+  .color-result { margin-bottom: 16px; }
+  .color-result:last-child { margin-bottom: 0; }
+  .result-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+  .result-swatch { width: 22px; height: 22px; border-radius: 50%; border: 1px solid rgba(0,0,0,0.12); flex-shrink: 0; }
+  .result-label { flex: 1; font-size: 14px; font-weight: 500; color: #2c2c2a; }
+  .result-note { font-size: 12px; color: #888780; }
+  .result-pct { font-size: 16px; font-weight: 600; color: #412402; }
+  .bar-track { background: #f1efe8; border-radius: 6px; height: 8px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 6px; transition: width 0.4s ease; }
+
+  .detail-toggle { background: none; border: none; cursor: pointer; width: 100%; text-align: left; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #854f0b; padding: 0; }
+  .detail-panel { margin-top: 14px; border-top: 0.5px solid #f1efe8; padding-top: 14px; }
+  .geno-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .geno-table th { text-align: left; padding: 6px 8px; font-size: 11px; font-weight: 600; color: #888780; text-transform: uppercase; letter-spacing: 0.4px; border-bottom: 0.5px solid #f1efe8; }
+  .geno-table td { padding: 7px 8px; border-bottom: 0.5px solid #f1efe8; color: #2c2c2a; }
+  .geno-table tr:last-child td { border-bottom: none; }
+  .geno-mono { font-family: monospace; font-size: 13px; }
+  .mini-swatch { width: 12px; height: 12px; border-radius: 50%; display: inline-block; border: 1px solid rgba(0,0,0,0.12); vertical-align: middle; margin-right: 5px; }
+
+  .info-box { background: #faeeda; border: 0.5px solid #fac775; border-radius: 12px; padding: 16px; font-size: 13px; color: #633806; line-height: 1.6; }
+  .info-box strong { font-weight: 600; color: #412402; }
+  .info-box .note { font-size: 12px; color: #854f0b; margin-top: 8px; font-style: italic; }
+
+  .none-msg { color: #888780; font-size: 14px; text-align: center; padding: 20px 0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="header">
+    <h1>Labrador Color Gene Predictor</h1>
+    <p>Select parent genotypes to predict litter coat colors</p>
+  </div>
+
+  <div class="parents">
+    <div class="parent-card">
+      <div class="parent-title">Sire (Father)</div>
+      <div class="color-badge" id="sire-badge">
+        <div class="color-swatch" id="sire-swatch"></div>
+        <div>
+          <div class="color-name" id="sire-color-name"></div>
+          <div class="color-geno" id="sire-geno-label"></div>
+        </div>
+      </div>
+      <div class="field-label">B Locus — Chocolate Gene</div>
+      <select id="sire-b">
+        <option value="BB">BB — Clear (no chocolate gene)</option>
+        <option value="Bb">Bb — Carrier (one chocolate gene)</option>
+        <option value="bb">bb — Chocolate</option>
+      </select>
+      <div class="field-label">E Locus — Expression Gene</div>
+      <select id="sire-e">
+        <option value="EE">EE — Clear (no yellow gene)</option>
+        <option value="Ee">Ee — Carrier (one yellow gene)</option>
+        <option value="ee">ee — Yellow</option>
+      </select>
+    </div>
+
+    <div class="parent-card">
+      <div class="parent-title">Dam (Mother)</div>
+      <div class="color-badge" id="dam-badge">
+        <div class="color-swatch" id="dam-swatch"></div>
+        <div>
+          <div class="color-name" id="dam-color-name"></div>
+          <div class="color-geno" id="dam-geno-label"></div>
+        </div>
+      </div>
+      <div class="field-label">B Locus — Chocolate Gene</div>
+      <select id="dam-b">
+        <option value="BB">BB — Clear (no chocolate gene)</option>
+        <option value="Bb">Bb — Carrier (one chocolate gene)</option>
+        <option value="bb">bb — Chocolate</option>
+      </select>
+      <div class="field-label">E Locus — Expression Gene</div>
+      <select id="dam-e">
+        <option value="EE">EE — Clear (no yellow gene)</option>
+        <option value="Ee">Ee — Carrier (one yellow gene)</option>
+        <option value="ee">ee — Yellow</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="results-card">
+    <div class="results-title">Predicted Litter Colors</div>
+    <div id="results-body"></div>
+    <div style="margin-top:14px;">
+      <button class="detail-toggle" id="detail-btn" onclick="toggleDetail()">
+        <span id="detail-arrow">▶</span> Detailed Genotype Breakdown
+      </button>
+      <div class="detail-panel" id="detail-panel" style="display:none;">
+        <table class="geno-table">
+          <thead><tr><th>Genotype</th><th>Coat Color</th><th style="text-align:right">Chance</th></tr></thead>
+          <tbody id="geno-tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-box">
+    <strong>How coat color genetics work in Labradors:</strong><br>
+    <strong>B locus</strong> controls pigment type — B (dominant) = black pigment; b (recessive) = chocolate pigment. A dog needs two copies of b (bb) to be chocolate.<br>
+    <strong>E locus</strong> controls whether that pigment is expressed. Two copies of e (ee) suppress color expression entirely, producing a yellow coat regardless of the B locus.<br>
+    <div class="note">Note: Fox Red is simply a deep shade of yellow (ee genotype). Dilute colors — Silver, Charcoal, Champagne — are caused by the separate D locus and are not shown here as they require additional DNA testing.</div>
+  </div>
+
+</div>
+<script>
+const COLORS = {
+  black:     { label: 'Black',          note: 'B_E_ genotype',       hex: '#2a2a2a', textHex: '#fff', badgeBg: '#f1efe8' },
+  chocolate: { label: 'Chocolate',      note: 'bbE_ genotype',       hex: '#5c3317', textHex: '#fff', badgeBg: '#faeeda' },
+  yellow:    { label: 'Yellow',         note: 'B_ee · black nose',   hex: '#D4A843', textHex: '#412402', badgeBg: '#faeeda' },
+  dudley:    { label: 'Dudley Yellow',  note: 'bbee · liver nose',   hex: '#b88b2a', textHex: '#412402', badgeBg: '#faeeda' },
+};
+
+function getColor(b, e) {
+  if (e === 'ee') return b === 'bb' ? 'dudley' : 'yellow';
+  return b === 'bb' ? 'chocolate' : 'black';
+}
+
+function cross(g1, g2, D, R) {
+  const a1 = g1.split(''), a2 = g2.split('');
+  const c = {};
+  c[D+D] = 0; c[D+R] = 0; c[R+R] = 0;
+  for (const x of a1) for (const y of a2) {
+    const k = (x===D && y===D) ? D+D : (x===R && y===R) ? R+R : D+R;
+    c[k]++;
+  }
+  return Object.fromEntries(Object.entries(c).map(([k,v]) => [k, v/4]));
+}
+
+function fmt(p) { return (p * 100).toFixed(p % 0.25 === 0 ? 0 : 1) + '%'; }
+
+function updateParentBadge(prefix) {
+  const b = document.getElementById(prefix + '-b').value;
+  const e = document.getElementById(prefix + '-e').value;
+  const ck = getColor(b, e);
+  const c = COLORS[ck];
+  document.getElementById(prefix + '-swatch').style.background = c.hex;
+  document.getElementById(prefix + '-color-name').textContent = c.label;
+  document.getElementById(prefix + '-color-name').style.color = '#2c2c2a';
+  document.getElementById(prefix + '-geno-label').textContent = b + ' ' + e;
+  document.getElementById(prefix + '-badge').style.background = c.badgeBg;
+}
+
+function calculate() {
+  const sB = document.getElementById('sire-b').value;
+  const sE = document.getElementById('sire-e').value;
+  const dB = document.getElementById('dam-b').value;
+  const dE = document.getElementById('dam-e').value;
+
+  updateParentBadge('sire');
+  updateParentBadge('dam');
+
+  const bDist = cross(sB, dB, 'B', 'b');
+  const eDist = cross(sE, dE, 'E', 'e');
+
+  const colorProbs = { black: 0, chocolate: 0, yellow: 0, dudley: 0 };
+  const genoMap = {};
+
+  for (const [bG, bP] of Object.entries(bDist)) {
+    for (const [eG, eP] of Object.entries(eDist)) {
+      const p = bP * eP;
+      if (p === 0) continue;
+      const ck = getColor(bG, eG);
+      colorProbs[ck] += p;
+      const key = bG + ' ' + eG;
+      if (!genoMap[key]) genoMap[key] = { ck, bG, eG, p: 0 };
+      genoMap[key].p += p;
+    }
+  }
+
+  const sorted = Object.entries(colorProbs).filter(([,p]) => p > 0).sort(([,a],[,b]) => b-a);
+
+  let html = '';
+  for (const [ck, p] of sorted) {
+    const c = COLORS[ck];
+    const pct = Math.round(p * 100);
+    html += `
+      <div class="color-result">
+        <div class="result-header">
+          <div class="result-swatch" style="background:${c.hex}"></div>
+          <div class="result-label">${c.label}<br><span class="result-note">${c.note}</span></div>
+          <div class="result-pct">${pct}%</div>
+        </div>
+        <div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${c.hex}"></div></div>
+      </div>`;
+  }
+  document.getElementById('results-body').innerHTML = html || '<div class="none-msg">No results</div>';
+
+  const genoSorted = Object.values(genoMap).sort((a,b) => b.p - a.p);
+  let thtml = '';
+  for (const { ck, bG, eG, p } of genoSorted) {
+    const c = COLORS[ck];
+    thtml += `<tr>
+      <td class="geno-mono">${bG} ${eG}</td>
+      <td><span class="mini-swatch" style="background:${c.hex}"></span>${c.label}</td>
+      <td style="text-align:right;font-weight:600;">${fmt(p)}</td>
+    </tr>`;
+  }
+  document.getElementById('geno-tbody').innerHTML = thtml;
+}
+
+let detailOpen = false;
+function toggleDetail() {
+  detailOpen = !detailOpen;
+  document.getElementById('detail-panel').style.display = detailOpen ? 'block' : 'none';
+  document.getElementById('detail-arrow').textContent = detailOpen ? '▼' : '▶';
+}
+
+['sire-b','sire-e','dam-b','dam-e'].forEach(id => {
+  document.getElementById(id).addEventListener('change', calculate);
+});
+
+calculate();
+</script>
+</body>
+</html>
